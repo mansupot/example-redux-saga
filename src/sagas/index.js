@@ -1,3 +1,10 @@
+/*
+ * @Author: Supot Patsaithong
+ * @Date: 2020-05-07 23:46:10
+ * @Last Modified by: Supot Patsaithong
+ * @Last Modified time: 2020-05-08 00:57:18
+ */
+
 import {
   call, // คือการเรียกฟังชั่นพร้อม parameter ทันที
   put, // คือการส่ง action โดยตรง โดยที่จะไม่โดนดักจับด้วย ซาก้า อีกแล้ว
@@ -9,64 +16,67 @@ import {
   delay, //คือฟังชั่นหน่วงเวลา
 } from "redux-saga/effects";
 import axios from "axios";
-
-import { rename as actionRename } from "../actions";
-
-// import actions from "../actions";
-
-const fetchProductFromApi = async (id) => {
-  //Ex. call api
-  return await axios.get(`http://localhost:1337/news/${id}`);
-};
+import { push } from "connected-react-router";
 
 // watcher
 export default function* () {
-  yield takeEvery("FECTH_PRODUCT", handleProduct);
-  yield takeEvery("RENAME_PRODUCT", rename);
-  yield takeEvery("CHANGE_AMOUNT", log);
-  // yield takeEvery("RENAME_SUCCESS", log);
-  // yield takeLatest("RENAME_PRODUCT", rename)
+  yield takeEvery("FATCH_PRODUCT", handleProduct);
+  yield takeLatest("LOGIN", handleLogin);
+  yield takeLatest("ADD_TO_CART", handleAddToCart);
 }
 
 // worker
-export function* handleProduct(actions) {
-  const data = yield call(fetchProductFromApi, "");
-  //todo data ...
-  //after then to store
-}
-
-export function* log(actions) {
-  let result = yield call(show, actions);
-  //todo result
-}
-export function* show(actions) {
-  //todo ...
-  return true;
-}
-
-export function* rename(actions) {
-  let result = yield call(msgc, "Welcome", "Welcom back", actions);
-  yield delay(2000);
-  yield put({
-    type: "RENAME_SUCCESS",
-    payload: result,
-  });
-}
-
-//Ex.
-// export function* login() {
-//   while (true) {
-//     const auth = yield call(authen, user, pass);
-//     saveItem(auth);
-//     yield take("LOGOUT");
-//     removeItem();
-//   }
-// }
-
-export function* msgc(msg1, msg2, actions) {
-  if (actions.payload !== "thailife") {
-    return yield msg1;
-  } else {
-    return yield msg2;
+export const auth = async ({ username = "", password = "" }) => {
+  try {
+    const authData = await axios.post("http://localhost:1337/auth/local", {
+      identifier: username,
+      password,
+    });
+    localStorage.setItem(
+      "auth",
+      JSON.stringify({
+        token: authData.data.jwt,
+        email: authData.data.user.email,
+        role: authData.data.user.role.type,
+      })
+    );
+    return "success";
+  } catch (err) {
+    return "fail";
   }
+};
+
+// worker
+export function* handleLogin(action) {
+  const result = yield call(auth, action.payload);
+  if (result === "success") {
+    yield put(push("/product"));
+  }
+  yield take("LOG_OUT");
+  yield put(push("/login"));
 }
+
+// worker
+export function* handleAddToCart(action) {
+  const products = yield select((state) => state.cart.products);
+  const sumTotal = products.reduce((acc, { price }) => acc + price, 0);
+  yield put({ type: "SUM_TOTAL", payload: sumTotal });
+}
+
+// worker
+export function* handleProduct(action) {
+  yield put({ type: "FETCH_LOADING" });
+  const product = yield call(fetchProductFromApi);
+  yield put({ type: "FETCH_PRODUCT_SUCCESS", payload: product });
+  yield put({ type: "FETCH_LOADING" });
+}
+
+//method
+export const fetchProductFromApi = async () => {
+  try {
+    const product = await axios.get("http://localhost:1337/products");
+    return product.data;
+  } catch (err) {
+    throw err;
+  }
+};

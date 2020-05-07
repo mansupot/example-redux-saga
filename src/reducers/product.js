@@ -1,27 +1,22 @@
-export default (
-  state = { name: "iphone", amount: 1, products: [], isLoading: false },
-  action
-) => {
+/*
+ * @Author: Supot Patsaithong
+ * @Date: 2020-05-07 23:46:06
+ * @Last Modified by: Supot Patsaithong
+ * @Last Modified time: 2020-05-07 23:54:58
+ */
+export default (state = { loading: false, products: [] }, action) => {
   switch (action.type) {
-    case "RENAME_PRODUCT":
-      return {
-        ...state,
-        name: action.payload,
-      };
-    case "CHANGE_AMOUNT":
-      return {
-        ...state,
-        amount: action.payload,
-      };
-    case "SET_LOADING":
-      return {
-        ...state,
-        isLoading: action.payload,
-      };
-    case "FECTH_PRODUCT":
+    case "FATCH_PRODUCT":
+      return state;
+    case "FETCH_PRODUCT_SUCCESS":
       return {
         ...state,
         products: action.payload,
+      };
+    case "FETCH_LOADING":
+      return {
+        ...state,
+        loading: !state.loading,
       };
     default:
       return state;

@@ -1,37 +1,50 @@
+/*
+ * @Author: Supot Patsaithong
+ * @Date: 2020-05-07 23:46:27
+ * @Last Modified by:   Supot Patsaithong
+ * @Last Modified time: 2020-05-07 23:46:27
+ */
 import React from "react";
 import ReactDOM from "react-dom";
+import { ConnectedRouter } from "connected-react-router";
 import "./index.css";
 import App from "./App";
 import * as serviceWorker from "./serviceWorker";
-
-import reducer from "./reducers";
-import { createStore, applyMiddleware, compose } from "redux";
-import { Provider } from "react-redux";
-
 //import bootstrap
 import "bootstrap/dist/css/bootstrap.min.css";
 
 //import saga
 import createSagaMiddleware from "redux-saga";
 
+import { createStore, applyMiddleware, compose } from "redux";
+import { Provider } from "react-redux";
+import { createBrowserHistory } from "history";
+import { routerMiddleware } from "connected-react-router";
+import createRootReducer from "./reducers";
+
 //import mysaga file
 import mySaga from "./sagas";
+
+export const history = createBrowserHistory();
 
 //create the saga middleware
 const sagaMiddleware = createSagaMiddleware();
 
 const composeEnhancers = window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ || compose;
 const store = createStore(
-  reducer,
+  createRootReducer(history),
   //** using middleware
   //applyMiddleware(sagaMiddleware)
+
   //** useing middleware and Redux Devtools
-  composeEnhancers(applyMiddleware(sagaMiddleware))
+  composeEnhancers(applyMiddleware(routerMiddleware(history), sagaMiddleware))
 );
 
 ReactDOM.render(
   <Provider store={store}>
-    <App />
+    <ConnectedRouter history={history}>
+      <App />
+    </ConnectedRouter>
   </Provider>,
   document.getElementById("root")
 );

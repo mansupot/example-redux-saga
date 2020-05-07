@@ -1,16 +1,21 @@
+/*
+ * @Author: Supot Patsaithong
+ * @Date: 2020-05-07 23:46:21
+ * @Last Modified by:   Supot Patsaithong
+ * @Last Modified time: 2020-05-07 23:46:21
+ */
 import React from "react";
+import { Route, Switch } from "react-router-dom";
+
 import Product from "./pages/product";
-import { Route, Switch, BrowserRouter } from "react-router-dom";
-import List from "./pages/list";
+import Login from "./pages/login";
 
 const Router = () => {
   return (
-    <BrowserRouter>
-      <Switch>
-        <Route exact path="/" component={Product} />
-        <Route path="/list" component={List} />
-      </Switch>
-    </BrowserRouter>
+    <Switch>
+      <Route exact path="/product" component={Product} />
+      <Route path="/login" component={Login} />
+    </Switch>
   );
 };
 
